@@ -15,19 +15,20 @@ class Simulation:
 
     def process_market_day(self):
         for investor in self.investors:
-            investor.resend_orders(self.market)
-
-        for investor in self.investors:
             investor.generate_new_orders(self.market)
 
         self.market.process_all_offers(self.transaction_limit)
-        self.market.clear_market()
+        self.market.update_offers()
 
     def run(self, number_of_days):
         for day in range(number_of_days):
             print(f"Day {day + 1}/{number_of_days}")
             self.asset_price_over_time.append(self.market.price_tracker.get_latest_asset_price(self.market.get_asset_types()[0]))
+            print(self.asset_price_over_time[-1])
             self.process_market_day()
+
+    def get_sales_data(self):
+        return self.asset_price_over_time
 
     def export(self):
         with open(PATH_TO_FILE + self.export_filename, "w") as file:

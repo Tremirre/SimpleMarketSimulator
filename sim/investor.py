@@ -1,13 +1,16 @@
 from random import choice, random, randint
 NAMES = ["John", "Jack", "Adam", "Patrick", "Mark", "Tenet", "Robert", "Hubert", "Martinez", "Bob"]
 
+MAX_INITIAL_FUNDS = 40
+
 
 class Investor:
     def __init__(self):
         self.name = choice(NAMES) + str(randint(100_000, 999_999))
         self.stored_assets = []
         self.assets_for_sale = []
-        self.funds = 100
+        self.funds = 20 + randint(0, 20)
+        self.frozen_funds = 0
         self.inertia = 0.90 + random() * 0.1
 
     def send_sell_order(self, market):
@@ -23,20 +26,24 @@ class Investor:
         latest_price = market.price_tracker.get_latest_asset_price(asset_type_to_buy)
         if (new_price := latest_price * 0.9) > self.funds:
             return
+        self.funds -= new_price
+        self.frozen_funds += new_price
         market.add_buy_offer(self, asset_type_to_buy, new_price)
 
     def process_buy_order(self, asset_id, price):
-        self.funds -= price
+        self.frozen_funds -= price
         self.stored_assets.append(asset_id)
 
     def process_sell_order(self, price):
         self.funds += price
 
-    #offer.min_sell_price *= self.inertia
-    #offer.max_buy_price = offer.max_buy_price * (2 - self.inertia)
-
     def generate_new_orders(self, market):
-        ...
+        p_buy = (self.funds/MAX_INITIAL_FUNDS)**2
+        if random() < p_buy:
+            self.send_buy_order(market)
+        p_sell = len(self.stored_assets)/5
+        if random() < p_sell:
+            self.send_sell_order(market)
 
     def take_available_asset(self, asset_type):
         for i, asset_id in enumerate(self.assets_for_sale):

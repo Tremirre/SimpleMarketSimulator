@@ -22,7 +22,7 @@ class Market:
         self.sell_offers.append(OfferFactory().create_offer(sender, asset_type, price, sell=True))
 
     def add_buy_offer(self, sender, asset_type, price):
-        self.sell_offers.append(OfferFactory().create_offer(sender, asset_type, price, sell=False))
+        self.buy_offers.append(OfferFactory().create_offer(sender, asset_type, price, sell=False))
 
     def process_all_offers(self, transaction_limit=10):
         processed_transactions = []
@@ -47,14 +47,14 @@ class Market:
         self.price_tracker.set_latest_asset_price(asset_for_sale.company_id, common_price)
         buyer.process_buy_order(asset_for_sale, common_price)
         if not isinstance(seller, Company):
-            seller.process_sell_order(asset_for_sale, common_price)
+            seller.process_sell_order(common_price)
 
     def get_asset_types(self):
         return [company.id for company in self.companies]
 
     def update_offers(self):
         for offer in self.sell_offers + self.buy_offers:
-            if offer.days_since_given >= 1 and isinstance(offer.sender, Company):
+            if offer.days_since_given >= 1 and not isinstance(offer.sender, Company):
                 offer.update_price()
             offer.days_since_given += 1
 
