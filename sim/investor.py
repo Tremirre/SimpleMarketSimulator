@@ -11,7 +11,7 @@ class Investor:
         self.assets_for_sale = []
         self.funds = 20 + randint(0, 20)
         self.frozen_funds = 0
-        self.inertia = 0.95 + random() * 0.05
+        self.inertia = 0.975 + random() * 0.025
 
     def send_sell_order(self, market):
         if not self.stored_assets:
@@ -38,11 +38,12 @@ class Investor:
         self.funds += price
 
     def generate_new_orders(self, market):
-        p_buy = (self.funds/MAX_INITIAL_FUNDS)**2
-        if random() < p_buy:
+        probabilities = [0.4, 0.2, 0.1, 0.01, 0, 0]
+        own_offers = market.count_own_offers(self.name)
+        p_offer = probabilities[own_offers]
+        if random() < p_offer:
             self.send_buy_order(market)
-        p_sell = len(self.stored_assets)/5
-        if random() < p_sell:
+        if random() < p_offer:
             self.send_sell_order(market)
 
     def take_available_asset(self, asset_type):
@@ -57,3 +58,8 @@ class Investor:
     def retract_buy_offer(self, price):
         self.frozen_funds -= price
         self.funds += price
+
+    def retract_sell_offer(self, asset_type):
+        asset_id = self.take_available_asset(asset_type)
+        assert asset_id is not None
+        self.stored_assets.append(asset_id)

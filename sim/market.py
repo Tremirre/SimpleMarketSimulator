@@ -2,6 +2,8 @@ from sim.asset import AssetManager
 from sim.offer import OfferFactory
 from sim.company import Company
 
+MAX_DAYS = 10
+
 
 class Market:
     def __init__(self):
@@ -26,6 +28,7 @@ class Market:
 
     def process_all_offers(self, transaction_limit=10):
         processed_transactions = []
+        self.sell_offers.sort(key=lambda offer: offer.price)
         for i, sell_offer in enumerate(self.sell_offers):
             for j, buy_offer in enumerate(self.buy_offers):
                 if sell_offer.asset_type == buy_offer.asset_type and sell_offer.price <= buy_offer.price:
@@ -43,7 +46,8 @@ class Market:
         seller = sell_offer.sender
         asset_for_sale = seller.take_available_asset(buy_offer.asset_type)
         AssetManager().change_asset_owner(asset_for_sale, buyer)
-        common_price = (buy_offer.price + sell_offer.price) / 2
+        common_price = sell_offer.price
+        #price_change = (common_price * 0.1 + self.price_tracker.get_latest_asset_price(asset_for_sale.company_id) * 0.9)
         self.price_tracker.set_latest_asset_price(asset_for_sale.company_id, common_price)
         buyer.process_buy_order(asset_for_sale, common_price)
         if not isinstance(seller, Company):
@@ -56,11 +60,12 @@ class Market:
         for_removal = []
         offers = self.sell_offers if sell else self.buy_offers
         for offer in offers:
-            if offer.days_since_given >= 6 and not isinstance(offer.sender, Company):
+            if offer.days_since_given >= MAX_DAYS and not isinstance(offer.sender, Company):
                 for_removal.append(offer.offer_id)
-                if sell:
+                if not sell:
                     offer.sender.retract_buy_offer(offer.price)
-
+                else:
+                    offer.sender.retract_sell_offer(offer.asset_type)
         while for_removal:
             if sell:
                 self.remove_sell_offer(for_removal.pop())
@@ -99,13 +104,16 @@ class Market:
         for offer in self.buy_offers:
             print(f"{offer.sender.name} offers to buy asset {offer.asset_type} for at most {offer.max_buy_price}")
 
+    def count_own_offers(self, name):
+        return sum([1 if offer.sender.name == name else 0 for offer in self.sell_offers + self.buy_offers])
+
 
 class PriceTracker:
     def __init__(self):
         self.asset_price = dict()
 
-    def set_latest_asset_price(self, asset_id, price):
-        self.asset_price[asset_id] = price
+    def set_latest_asset_price(self, asset_type, price):
+        self.asset_price[asset_type] = price
 
-    def get_latest_asset_price(self, asset_id):
-        return self.asset_price[asset_id]
+    def get_latest_asset_price(self, asset_type):
+        return self.asset_price[asset_type]
