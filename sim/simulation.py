@@ -28,11 +28,11 @@ class Simulation:
 
     def run(self, number_of_days):
         for day in range(number_of_days):
-            if self.silenced:
+            self.asset_price_over_time.append(
+                self.market.price_tracker.get_latest_asset_price(self.market.get_asset_types()[0]))
+            if not self.silenced:
                 print(f"Day {day + 1}/{number_of_days}")
-            self.asset_price_over_time.append(self.market.price_tracker.get_latest_asset_price(self.market.get_asset_types()[0]))
-            if self.silenced:
-                print(self.asset_price_over_time[-1])
+                print(f"Asset price: {self.asset_price_over_time[-1]}")
             self.process_market_day()
 
     def get_sales_data(self):
