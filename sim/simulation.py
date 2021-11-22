@@ -5,10 +5,16 @@ PATH_TO_FILE = "C:\\Users\\sbart\\Desktop\\IDE Repositories\\VSC Repos\\Python\\
 
 
 class Simulation:
-    def __init__(self, number_of_investors=20, transaction_limit=10, export_filename="prices.txt", initial_market_size=20):
+    def __init__(self,
+                 number_of_investors=20,
+                 transaction_limit=10,
+                 export_filename="prices.txt",
+                 initial_market_size=20,
+                 silenced=False):
         self.asset_price_over_time = []
         self.transaction_limit = transaction_limit
         self.export_filename = export_filename
+        self.silenced = silenced
         self.investors = [Investor() for _ in range(number_of_investors)]
         self.market = Market()
         self.market.initialize_market(initial_market_size)
@@ -22,9 +28,11 @@ class Simulation:
 
     def run(self, number_of_days):
         for day in range(number_of_days):
-            print(f"Day {day + 1}/{number_of_days}")
+            if self.silenced:
+                print(f"Day {day + 1}/{number_of_days}")
             self.asset_price_over_time.append(self.market.price_tracker.get_latest_asset_price(self.market.get_asset_types()[0]))
-            print(self.asset_price_over_time[-1])
+            if self.silenced:
+                print(self.asset_price_over_time[-1])
             self.process_market_day()
 
     def get_sales_data(self):
