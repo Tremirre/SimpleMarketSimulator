@@ -52,7 +52,24 @@ class Market:
     def get_asset_types(self):
         return [company.id for company in self.companies]
 
+    def remove_outdated_offers(self, sell: bool):
+        for_removal = []
+        offers = self.sell_offers if sell else self.buy_offers
+        for offer in offers:
+            if offer.days_since_given >= 6 and not isinstance(offer.sender, Company):
+                for_removal.append(offer.offer_id)
+                if sell:
+                    offer.sender.retract_buy_offer(offer.price)
+
+        while for_removal:
+            if sell:
+                self.remove_sell_offer(for_removal.pop())
+            else:
+                self.remove_buy_offer(for_removal.pop())
+
     def update_offers(self):
+        self.remove_outdated_offers(sell=True)
+        self.remove_outdated_offers(sell=False)
         for offer in self.sell_offers + self.buy_offers:
             if offer.days_since_given >= 1 and not isinstance(offer.sender, Company):
                 offer.update_price()

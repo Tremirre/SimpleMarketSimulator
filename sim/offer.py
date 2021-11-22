@@ -25,7 +25,9 @@ class SellOffer(Offer):
 @dataclass
 class BuyOffer(Offer):
     def update_price(self):
+        old_price = self.price
         self.price *= (2 - self.sender.inertia)
+        self.sender.update_frozen_funds(old_price, self.price)
 
 
 class OfferFactory:

@@ -11,7 +11,7 @@ class Investor:
         self.assets_for_sale = []
         self.funds = 20 + randint(0, 20)
         self.frozen_funds = 0
-        self.inertia = 0.90 + random() * 0.1
+        self.inertia = 0.95 + random() * 0.05
 
     def send_sell_order(self, market):
         if not self.stored_assets:
@@ -49,3 +49,11 @@ class Investor:
         for i, asset_id in enumerate(self.assets_for_sale):
             if asset_id.company_id == asset_type:
                 return self.assets_for_sale.pop(i)
+
+    def update_frozen_funds(self, old_price, new_price):
+        self.frozen_funds += old_price
+        self.frozen_funds -= new_price
+
+    def retract_buy_offer(self, price):
+        self.frozen_funds -= price
+        self.funds += price
