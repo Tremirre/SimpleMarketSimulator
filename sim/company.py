@@ -1,7 +1,7 @@
 class Company:
-    def __init__(self):
-        self.name = "Company A"
-        self.id = "COPA"
+    def __init__(self, name):
+        self.name = name
+        self.id = self.name[:3].upper()
         self.funds = 10_000_000
         self.assets_for_sale = []
 

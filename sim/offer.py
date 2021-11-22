@@ -1,22 +1,31 @@
 from dataclasses import dataclass
 from typing import Any
+from abc import ABC, abstractmethod
 
 
-@dataclass()
-class Offer:
+@dataclass
+class Offer(ABC):
     sender: Any
     offer_id: int
     asset_type: str
+    days_since_given: int
+    price: float
+
+    @abstractmethod
+    def update_price(self):
+        ...
 
 
-@dataclass()
+@dataclass
 class SellOffer(Offer):
-    min_sell_price: float
+    def update_price(self):
+        self.price *= self.sender.inertia
 
 
-@dataclass()
+@dataclass
 class BuyOffer(Offer):
-    max_buy_price: float
+    def update_price(self):
+        self.price = self.price
 
 
 class OfferFactory:
@@ -24,5 +33,5 @@ class OfferFactory:
 
     def create_offer(self, sender: Any, asset_type: str, price: float, sell: bool) -> Offer:
         if sell:
-            return SellOffer(sender, self.__class__.count, asset_type, price)
-        return BuyOffer(sender, self.__class__.count, asset_type, price)
+            return SellOffer(sender, self.__class__.count, asset_type, 0, price)
+        return BuyOffer(sender, self.__class__.count, asset_type, 0, price)

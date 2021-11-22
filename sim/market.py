@@ -11,25 +11,24 @@ class Market:
         self.companies = set()
 
     def initialize_market(self, initial_market_size=20, initial_price=5.0):
-        self.companies.add(company := Company())
+        self.companies.add(company := Company("NetFuel"))
         for _ in range(initial_market_size):
             new_asset = AssetManager().create_asset(company)
             company.assets_for_sale.append(new_asset.id)
-            offer = OfferFactory().create_offer(company, new_asset.id.company_id, initial_price, sell=True)
-            self.add_sell_offer(offer)
+            self.add_sell_offer(company, new_asset.id.company_id, initial_price)
         self.price_tracker.set_latest_asset_price(company.id, initial_price)
 
-    def add_sell_offer(self, sell_offer):
-        self.sell_offers.append(sell_offer)
+    def add_sell_offer(self, sender, asset_type, price):
+        self.sell_offers.append(OfferFactory().create_offer(sender, asset_type, price, sell=True))
 
-    def add_buy_offer(self, buy_offer):
-        self.buy_offers.append(buy_offer)
+    def add_buy_offer(self, sender, asset_type, price):
+        self.sell_offers.append(OfferFactory().create_offer(sender, asset_type, price, sell=False))
 
     def process_all_offers(self, transaction_limit=10):
         processed_transactions = []
         for i, sell_offer in enumerate(self.sell_offers):
             for j, buy_offer in enumerate(self.buy_offers):
-                if sell_offer.asset_type == buy_offer.asset_type and sell_offer.min_sell_price <= buy_offer.max_buy_price:
+                if sell_offer.asset_type == buy_offer.asset_type and sell_offer.price <= buy_offer.price:
                     self.process_offer(buy_offer, sell_offer)
                     processed_transactions.append(i)
                     self.buy_offers.pop(j)
@@ -42,9 +41,9 @@ class Market:
     def process_offer(self, buy_offer, sell_offer):
         buyer = buy_offer.sender
         seller = sell_offer.sender
-        asset_for_sale = seller.get_free_asset(buy_offer.asset_type)
+        asset_for_sale = seller.take_available_asset(buy_offer.asset_type)
         AssetManager().change_asset_owner(asset_for_sale, buyer)
-        common_price = (buy_offer.max_buy_price + sell_offer.min_sell_price) / 2
+        common_price = (buy_offer.price + sell_offer.price) / 2
         self.price_tracker.set_latest_asset_price(asset_for_sale.company_id, common_price)
         buyer.process_buy_order(asset_for_sale, common_price)
         if not isinstance(seller, Company):
@@ -53,13 +52,11 @@ class Market:
     def get_asset_types(self):
         return [company.id for company in self.companies]
 
-    def clear_market(self):
-        new_sell = []
-        for offer in self.sell_offers:
-            if isinstance(offer.sender, Company):
-                new_sell.append(offer)
-        self.sell_offers = new_sell
-        self.buy_offers = []
+    def update_offers(self):
+        for offer in self.sell_offers + self.buy_offers:
+            if offer.days_since_given >= 1 and isinstance(offer.sender, Company):
+                offer.update_price()
+            offer.days_since_given += 1
 
     def remove_sell_offer(self, offer_id):
         for i, offer in enumerate(self.sell_offers):
