@@ -11,7 +11,7 @@ def main():
             simulation = Simulation(size, 20, super_folder + folder + f"prices{i+1}.txt")
             simulation.run(720)
             simulation.export()"""
-    simulation = Simulation(10, 10)
+    simulation = Simulation(20, 10)
     simulation.run(365)
     #simulation.export()
 
