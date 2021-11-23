@@ -3,7 +3,7 @@ from sim.offer import OfferFactory
 from sim.company import Company
 from random import shuffle
 
-MAX_DAYS = 30
+MAX_DAYS = 50
 
 
 class Market:
@@ -47,7 +47,6 @@ class Market:
         buyer = buy_offer.sender
         seller = sell_offer.sender
         asset_for_sale = seller.take_available_asset(buy_offer.asset_type)
-        AssetManager().change_asset_owner(asset_for_sale, buyer)
         common_price = sell_offer.price
         self.price_tracker.set_latest_asset_price(asset_for_sale.company_id, common_price)
         buyer.process_buy_order(asset_for_sale, common_price)

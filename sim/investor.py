@@ -11,7 +11,7 @@ class Investor:
         self.assets_for_sale = []
         self.funds = 20 + randint(0, 20)
         self.frozen_funds = 0
-        self.inertia = 0.90 #+ random() * 0.1
+        self.inertia = 0.88 + random() * 0.04
 
     def send_sell_order(self, market):
         if not self.stored_assets:
