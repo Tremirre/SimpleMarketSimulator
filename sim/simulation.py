@@ -11,7 +11,7 @@ class Simulation:
                  export_filename="prices.txt",
                  initial_market_size=20,
                  silenced=False):
-        self.asset_price_over_time = []
+        self.asset_prices_over_time = [[] for _ in range(10)]
         self.transaction_limit = transaction_limit
         self.export_filename = export_filename
         self.silenced = silenced
@@ -28,17 +28,14 @@ class Simulation:
 
     def run(self, number_of_days):
         for day in range(number_of_days):
-            self.asset_price_over_time.append(
+            self.asset_prices_over_time[0].append(
                 self.market.price_tracker.get_latest_asset_price(self.market.get_asset_types()[0]))
+            self.asset_prices_over_time[1].append(
+                self.market.price_tracker.get_latest_asset_price(self.market.get_asset_types()[1]))
             if not self.silenced:
                 print(f"Day {day + 1}/{number_of_days}")
-                print(f"Asset price: {self.asset_price_over_time[-1]}")
+                print(f"Asset price: {self.asset_prices_over_time[-1]}")
             self.process_market_day()
 
-    def get_sales_data(self):
-        return self.asset_price_over_time
-
-    def export(self):
-        with open(PATH_TO_FILE + self.export_filename, "w") as file:
-            for price in self.asset_price_over_time:
-                file.write(str(price) + '\n')
+    def get_sales_data(self, idx=0):
+        return self.asset_prices_over_time[idx]

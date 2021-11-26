@@ -13,7 +13,6 @@ def main():
             simulation.export()"""
     simulation = Simulation(20, 10)
     simulation.run(365)
-    #simulation.export()
 
 
 if __name__ == "__main__":

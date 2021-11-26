@@ -15,11 +15,17 @@ class Market:
 
     def initialize_market(self, initial_market_size=20, initial_price=5.0):
         self.companies.add(company := Company("NetFuel"))
-        for _ in range(initial_market_size):
+        self.companies.add(company_2 := Company("ByTron"))
+        for _ in range(initial_market_size//2):
             new_asset = AssetManager().create_asset(company)
             company.assets_for_sale.append(new_asset.id)
             self.add_sell_offer(company, new_asset.id.company_id, initial_price)
+        for _ in range(initial_market_size//2):
+            new_asset = AssetManager().create_asset(company_2)
+            company.assets_for_sale.append(new_asset.id)
+            self.add_sell_offer(company, new_asset.id.company_id, 13.2)
         self.price_tracker.set_latest_asset_price(company.id, initial_price)
+        self.price_tracker.set_latest_asset_price(company_2.id, 13.2)
 
     def add_sell_offer(self, sender, asset_type, price):
         self.sell_offers.append(OfferFactory().create_offer(sender, asset_type, price, sell=True))
@@ -114,7 +120,7 @@ class PriceTracker:
         self.asset_price = dict()
 
     def set_latest_asset_price(self, asset_type, price):
-        self.asset_price[asset_type] = price
+        self.asset_price.setdefault(asset_type, []).append(price)
 
     def get_latest_asset_price(self, asset_type):
-        return self.asset_price[asset_type]
+        return self.asset_price[asset_type][-1]
